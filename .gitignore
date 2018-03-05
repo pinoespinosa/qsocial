@@ -1,0 +1,14 @@
+
+RemoteSystemsTempFiles/
+
+\.recommenders/
+
+\.metadata/
+
+PdfEditor/\.settings/
+
+PdfEditor/\.project
+
+PdfEditor/\.classpath
+
+PdfEditor/target/
