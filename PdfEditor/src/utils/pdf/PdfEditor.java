@@ -13,8 +13,8 @@ import com.lowagie.text.pdf.PdfStamper;
 
 public class PdfEditor {
 
-	private static String TEST_INPUT_FILE_PATH = "resources/PFB.pdf";
-	private static String TEST_OUTPUT_FILE_PATH = "PFB-Edit.pdf";
+	private static String TEST_INPUT_FILE_PATH = "resources" + File.separator + "PFB.pdf";
+	private static String TEST_OUTPUT_FILE_PATH = "resources" + File.separator + "PFB-Edit.pdf";
 
 	
 	/**
@@ -57,8 +57,32 @@ public class PdfEditor {
 
 		reader.selectPages(processEraseRange(fromRange, toRange, numPages));
 
-		PdfStamper pdfStamper = new PdfStamper(reader, new FileOutputStream(fileDestination));
-		pdfStamper.close();
+		if (!fileDestination.equals(fileSource)) {
+			PdfStamper pdfStamper = new PdfStamper(reader, new FileOutputStream(fileDestination));
+			pdfStamper.close();
+			reader.close();
+
+		} else {
+			/*
+			 * The library do no support re-write the same file, so this is a
+			 * work-around to allow this.
+			 */
+
+			String auxName = "_AUX_" + System.currentTimeMillis();
+			auxName = fileDestination.replace(".pdf", auxName + ".pdf");
+
+			PdfStamper pdfStamper = new PdfStamper(reader, new FileOutputStream(auxName));
+			pdfStamper.close();
+			reader.close();
+
+			reader = new PdfReader(auxName);
+			pdfStamper = new PdfStamper(reader, new FileOutputStream(fileDestination));
+			pdfStamper.close();
+			reader.close();
+
+			new File(auxName).delete();
+
+		}
 
 	}
 
@@ -68,40 +92,42 @@ public class PdfEditor {
 			return (Math.max(endRange + 1, 1)) + "-" + numPages;
 
 		if (endRange >= numPages)
-			return (1 + "-" + Math.min(startRange-1,numPages));
+			return (1 + "-" + Math.min(startRange - 1, numPages));
 
 		return (1 + "-" + (startRange - 1) + "," + (endRange + 1) + "-" + numPages);
 
 	}
 
-	
-
-	
 	@Test
 	public void removeTribialRange() {
 		try {
+			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
 			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 2, 5);
 
-			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages() + 4);
+			assert (pagesInput == readerOutput.getNumberOfPages() + 4);
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
 		}
 
 	}
-	
+
 	@Test
 	public void removeFirstPage() {
 		try {
+			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
 			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 1, 1);
 
-			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages() + 1);
+			assert (pagesInput == readerOutput.getNumberOfPages() + 1);
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
@@ -112,12 +138,16 @@ public class PdfEditor {
 	@Test
 	public void removeMiddlePage() {
 		try {
-			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 25, 25);
 
 			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
+			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 25, 25);
+
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages() + 1);
+			assert (pagesInput == readerOutput.getNumberOfPages() + 1);
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
@@ -128,12 +158,16 @@ public class PdfEditor {
 	@Test
 	public void removeLastPage() {
 		try {
-			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 669, 669);
 
 			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
+			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 669, 669);
+
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages() + 1);
+			assert (pagesInput == readerOutput.getNumberOfPages() + 1);
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
@@ -144,12 +178,16 @@ public class PdfEditor {
 	@Test
 	public void removePagesOutOfRange1() {
 		try {
-			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 1000, 1500);
 
 			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
+			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, 1000, 1500);
+
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages());
+			assert (pagesInput == readerOutput.getNumberOfPages());
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
@@ -160,12 +198,16 @@ public class PdfEditor {
 	@Test
 	public void removePagesOutOfRange2() {
 		try {
-			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, -50, -25);
 
 			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
+			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, -50, -25);
+
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages());
+			assert (pagesInput == readerOutput.getNumberOfPages());
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
@@ -176,12 +218,16 @@ public class PdfEditor {
 	@Test
 	public void removePagesOutOfRange3() {
 		try {
-			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, -50, 5);
 
 			PdfReader readerInput = new PdfReader(TEST_INPUT_FILE_PATH);
+			int pagesInput = readerInput.getNumberOfPages();
+			readerInput.close();
+
+			removePages(TEST_INPUT_FILE_PATH, TEST_OUTPUT_FILE_PATH, -50, 5);
+
 			PdfReader readerOutput = new PdfReader(TEST_OUTPUT_FILE_PATH);
 
-			assert (readerInput.getNumberOfPages() == readerOutput.getNumberOfPages() + 5);
+			assert (pagesInput == readerOutput.getNumberOfPages() + 5);
 
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
