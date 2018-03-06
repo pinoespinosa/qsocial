@@ -86,6 +86,21 @@ public class PdfEditor {
 
 	}
 
+	/**
+	 * Removes a page from PDF file.
+	 * 
+	 * @param fileSource
+	 * @param fileDestination
+	 * @param page
+	 * @throws IOException
+	 * @throws DocumentException
+	 */
+	public static void removePage(String fileSource, String fileDestination, int page)
+			throws IOException, DocumentException {
+		removePages(fileSource, fileDestination, page, page);
+
+	}
+
 	private static String processEraseRange(int startRange, int endRange, int numPages) {
 
 		if (startRange <= 1)
